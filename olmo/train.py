@@ -27,7 +27,7 @@ from typing import (
     Tuple,
     Union,
 )
-
+import ipdb
 import numpy as np
 import torch
 import torch.distributed as dist
@@ -858,9 +858,12 @@ class Trainer:
                 if self.model.config.block_type == BlockType.moe:
                     if self.model.config.moe_zloss_weight:
                         lb_loss, moe_z_loss = batched_load_balancing_loss(self.moe_args)
+                        if self.moe_args.moe_loss_weight == 0.0:
+                            lb_loss = torch.tensor(0.0, device=self.device)
                         lb_loss = lb_loss / len(micro_batches)
                         moe_z_loss = moe_z_loss / len(micro_batches)
                     elif self.model.config.moe_loss_weight:
+                        print("compute load balancing loss without zloss")
                         lb_loss = batched_load_balancing_loss(self.moe_args) / len(micro_batches)
                     if self.model.config.moe_log_expert_assignment:
                         if self.model.config.moe_zloss_weight:

@@ -1,0 +1,112 @@
+{
+  "builder_name": "parquet",
+  "citation": "",
+  "config_name": "zh",
+  "dataset_name": "global-mmlu",
+  "dataset_size": 7521341,
+  "description": "",
+  "download_checksums": {
+    "hf://datasets/CohereForAI/Global-MMLU@ba1ad5e389a1b669ff3375c620454bedaa975485/zh/test-00000-of-00001.parquet": {
+      "num_bytes": 3618771,
+      "checksum": null
+    },
+    "hf://datasets/CohereForAI/Global-MMLU@ba1ad5e389a1b669ff3375c620454bedaa975485/zh/dev-00000-of-00001.parquet": {
+      "num_bytes": 84714,
+      "checksum": null
+    }
+  },
+  "download_size": 3703485,
+  "features": {
+    "sample_id": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "subject": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "subject_category": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "question": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "option_a": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "option_b": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "option_c": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "option_d": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "answer": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "required_knowledge": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "time_sensitive": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "reference": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "culture": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "region": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "country": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "cultural_sensitivity_label": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "is_annotated": {
+      "dtype": "bool",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 11224826,
+  "splits": {
+    "test": {
+      "name": "test",
+      "num_bytes": 7393764,
+      "num_examples": 14042,
+      "dataset_name": "global-mmlu"
+    },
+    "dev": {
+      "name": "dev",
+      "num_bytes": 127577,
+      "num_examples": 285,
+      "dataset_name": "global-mmlu"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

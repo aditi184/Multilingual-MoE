@@ -8,6 +8,8 @@ Example usage (Aug 2024):
 python scripts/compare_model_state.py \
     --base_model_path test_model/step0-unsharded \
     --compare_model_path test_model/step0-unsharded
+
+python compare_model_state.py base_model_path /home/mila/k/khandela/scratch/ai2-llm/runs/base-model/step1-unsharded compare_model_path /home/mila/k/khandela/scratch/ai2-llm/runs/pretrain-hi-en/step150-unsharded
 """
 
 import logging
@@ -91,13 +93,15 @@ def main():
 
     parser = ArgumentParser()
     parser.add_argument(
-        "base_model_path",
+        "--base_model_path",
+        default="/home/mila/k/khandela/scratch/ai2-llm/runs/base-model/step1-unsharded",
         type=Path,
         help="Path where the base (i.e. reference) model is stored",
     )
     parser.add_argument(
-        "compare_model_path",
+        "--compare_model_path",
         type=Path,
+        default="/home/mila/k/khandela/scratch/ai2-llm/runs/pretrain-hi-en/step150-unsharded",
         help="Path where the compare (a.k.a new, different) model is stored",
     )
     parser.add_argument(

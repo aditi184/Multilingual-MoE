@@ -6,7 +6,7 @@ import sys
 from datetime import timedelta
 from pathlib import Path
 from typing import Optional, TextIO
-
+import ipdb
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
@@ -138,6 +138,8 @@ def main(cfg: TrainConfig) -> None:
         )
 
     olmo_model = OLMo(cfg.model)
+
+    
     log.info(f"Total number of parameters: {olmo_model.num_params():,d}")
     log.info(f"Number of non-embedding parameters: {olmo_model.num_params(include_embedding=False):,d}")
     if olmo_model.config.block_type == "moe":
@@ -165,6 +167,7 @@ def main(cfg: TrainConfig) -> None:
     elif cfg.distributed_strategy == DistributedStrategy.fsdp:
         # Wrap the model in FSDP.
         log.info("Wrapping model with FSDP...")
+        
         assert cfg.fsdp is not None, "DistributedStrategy fsdp needs cfg.fsdp to be set!"
         wrap_policy = olmo_model.get_fsdp_wrap_policy(cfg.fsdp.wrapping_strategy)
 
@@ -201,7 +204,6 @@ def main(cfg: TrainConfig) -> None:
 
             device_mesh = init_device_mesh("cuda", (num_model_replicas, get_world_size() // num_model_replicas))
             hybrid_sharding_fsdp_kwargs["device_mesh"] = device_mesh
-
         dist_model = FSDP(
             olmo_model,
             sharding_strategy=cfg.fsdp.sharding_strategy,

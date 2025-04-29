@@ -1,3 +1,5 @@
+# python unshard.py /home/mila/k/khandela/scratch/ai2-llm/runs/test-converted-ckpt/step1 /home/mila/k/khandela/scratch/ai2-llm/runs/test-converted-ckpt/test-unsharding/latest_pretrained_olmo_format
+
 import logging
 import shutil
 from pathlib import Path
