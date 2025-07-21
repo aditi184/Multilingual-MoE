@@ -1,33 +1,38 @@
-run_name: retrain-
+run_name: retrain-olmoe-5lang
 seed: 6198
 dry_run: false
 no_pre_train_checkpoint: false
 
 wandb:
-  project: "Pretrain-OLMoE"   # Name of your W&B project
+  project: "Retrain-OLMoE-5lang"   # Name of your W&B project
   entity: "aditi-khandelwal-mcgill-university"  # W&B entity (usually your username or team name)
   group: "aditi-khandelwal-mcgill-university"      # (Optional) Group name for multiple runs
-  name: "retrain-"               # (Optional) Custom name for this run
+  name: "retrain-olmoe-5lang"               # (Optional) Custom name for this run
   tags: ["experiment1"]  # (Optional) Tags for filtering runs
   rank_zero_only: true 
 
 model:
   d_model: 2048
   n_heads: 16
+  n_kv_heads: null
+  clip_qkv: null
   n_layers: 16
   mlp_ratio: 1
   weight_tying: false
   alibi: false
+  alibi_bias_max: 8.0
   rope: true
+  rope_full_precision: true
   flash_attention: true
   attention_dropout: 0.0
-  attention_layer_norm: true
+  attention_layer_norm: false
   include_bias: false
   block_type: moe
+  block_group_size: 1
   layer_norm_type: rms
   layer_norm_with_affine: true
   bias_for_layer_norm: false
-  attention_layer_norm_with_affine: true
+  attention_layer_norm_with_affine: false
   activation_type: swiglu
   residual_dropout: 0.0
   embedding_dropout: 0.0
@@ -46,6 +51,9 @@ model:
   moe_mlp_impl: sparse
   moe_zloss_weight: 0.001
   moe_loss_weight: 0.01
+  multi_query_attention: null
+  precision: amp_bf16
+
 
 compile: null
 
@@ -78,14 +86,14 @@ save_overwrite: true
 
 save_interval: 100
 save_interval_ephemeral: null
-save_num_checkpoints_to_keep: 3
+save_num_checkpoints_to_keep: 2
 sharded_checkpointer: olmo_core
 
 save_interval_unsharded: 100
-save_num_unsharded_checkpoints_to_keep: 3
+save_num_unsharded_checkpoints_to_keep: 2
 
-load_path: /home/mila/k/khandela/scratch/ai2-llm/runs/pretrain-multilingual-en-hi-ar-ru-zh/latest
-try_load_latest_save: true
+load_path: /home/mila/k/khandela/scratch/ai2-llm/runs/retrain-olmoe-5lang/latest
+# try_load_latest_save: true
 
 max_duration: 5ep
 global_train_batch_size: 1024
@@ -105,7 +113,7 @@ max_grad_norm_ratio: null
 speed_monitor:
   window_size: 1
 
-eval_interval: 200
+eval_interval: 100
 eval_subset_num_batches: -1
 device_eval_batch_size: ${device_train_microbatch_size}
 evaluators:
@@ -124,15 +132,6 @@ evaluators:
           - /home/mila/k/khandela/scratch/olmoe-data/test/hi/part-0-00000.npy
         english-validation:
           - /home/mila/k/khandela/scratch/olmoe-data/test/en/part-0-00000.npy
-
-  ##########################
-  # Downstream evaluations #
-  ##########################
-  - label: piqa
-    type: downstream
-
-  - label: mmlu_social_sciences_mc_5shot
-    type: downstream
 
 data:
   pad_direction: right

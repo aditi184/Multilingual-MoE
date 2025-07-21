@@ -1,4 +1,4 @@
-# python convert_olmo_hf.py --input_dir /home/mila/k/khandela/scratch/ai2-llm/runs/retrain-olmoe-5lang/latest-unsharded --output_dir /home/mila/k/khandela/scratch/ai2-llm/checkpoints/OLMoE/retrain-5lang
+# python convert_olmo_hf_retrain.py --input_dir /home/mila/k/khandela/scratch/ai2-llm/runs/retrain-olmoe-5lang-lrl/step400-unsharded --output_dir /home/mila/k/khandela/scratch/ai2-llm/checkpoints/OLMoE/retrain-10lang-lrl
 import argparse
 import gc
 import json
@@ -74,8 +74,8 @@ def write_model(model_path, input_base_path, tokenizer_path=None, safe_serializa
             f"model.layers.{layer_i}.self_attn.k_proj.weight": k_proj_weight,
             f"model.layers.{layer_i}.self_attn.v_proj.weight": v_proj_weight,
             f"model.layers.{layer_i}.self_attn.o_proj.weight": loaded[f"transformer.blocks.{layer_i}.attn_out.weight"],
-            f"model.layers.{layer_i}.self_attn.q_norm.weight": loaded[f"transformer.blocks.{layer_i}.q_norm.weight"],
-            f"model.layers.{layer_i}.self_attn.k_norm.weight": loaded[f"transformer.blocks.{layer_i}.k_norm.weight"],
+            # f"model.layers.{layer_i}.self_attn.q_norm.weight": loaded[f"transformer.blocks.{layer_i}.q_norm.weight"],
+            # f"model.layers.{layer_i}.self_attn.k_norm.weight": loaded[f"transformer.blocks.{layer_i}.k_norm.weight"],
             f"model.layers.{layer_i}.mlp.gate.weight": loaded[f"transformer.blocks.{layer_i}.ffn.router.layer.weight"],
             f"model.layers.{layer_i}.input_layernorm.weight": loaded[f"transformer.blocks.{layer_i}.attn_norm.weight"],
             f"model.layers.{layer_i}.post_attention_layernorm.weight": loaded[

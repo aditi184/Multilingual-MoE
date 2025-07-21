@@ -1,0 +1,198 @@
+run_name: Evals-dense-28k
+seed: 6198
+dry_run: false
+no_pre_train_checkpoint: false
+
+wandb:
+  project: "Perplexity-Analysis"   # Name of your W&B project
+  entity: "aditi-khandelwal-mcgill-university"  # W&B entity (usually your username or team name)
+  group: "aditi-khandelwal-mcgill-university"      # (Optional) Group name for multiple runs
+  name: "Evals-dense-28k"               # (Optional) Custom name for this run
+  tags: ["experiment1"]  # (Optional) Tags for filtering runs
+  rank_zero_only: true 
+
+model:
+  d_model: 2048
+  n_heads: 16
+  n_kv_heads: null
+  clip_qkv: null
+  n_layers: 16
+  mlp_ratio: 8
+  mlp_hidden_size: null
+  activation_type: swiglu
+  block_type: sequential
+  block_group_size: 1
+  alibi: false
+  alibi_bias_max: 8.0
+  rope: true
+  rope_full_precision: true
+  flash_attention: true
+  attention_dropout: 0.0
+  multi_query_attention: null
+  attention_layer_norm: false
+  residual_dropout: 0.0
+  embedding_dropout: 0.0
+  layer_norm_type: rms
+  layer_norm_with_affine: true
+  attention_layer_norm_with_affine: false
+  max_sequence_length: 4096
+  include_bias: false
+  bias_for_layer_norm: false
+  scale_logits: false
+  vocab_size: 50280
+  embedding_size: 50304
+  weight_tying: false
+  eos_token_id: 0
+  pad_token_id: 1
+  init_device: meta
+  init_fn: normal
+  init_std: 0.02
+  init_cutoff_factor: 3.0
+  precision: amp_bf16
+  moe_num_experts: 8
+  moe_top_k: 2
+  moe_mlp_impl: sparse
+  moe_log_expert_assignment: true
+  moe_shared_expert: false
+  moe_lbl_in_fp32: false
+  moe_loss_weight: 0.1
+  moe_zloss_weight: null
+  moe_dropless: true
+  moe_capacity_factor: 1.25
+
+softmax_auxiliary_loss: false
+auxiliary_loss_multiplier: 1e-5
+fused_loss: null
+
+compile: null
+
+optimizer:
+  name: adamw
+  learning_rate: 3.0e-4
+  weight_decay: 0.1
+  eps: 1e-8
+  decay_norm_and_bias: true
+  decay_embeddings: false
+  betas:
+  - 0.9
+  - 0.95
+  metrics_log_interval: 1
+
+scheduler:
+  name: cosine_with_warmup
+  units: tokens
+  t_warmup: 8388608000
+  t_max: 5e12
+  alpha_f: 0.1
+  warmup_min_lr: 0.0
+
+tokenizer:
+  identifier: tokenizers/allenai_gpt-neox-olmo-dolma-v1_5.json
+  truncate_direction: right
+
+save_folder: /home/mila/k/khandela/scratch/ai2-llm/runs/${run_name}
+remote_save_folder: null
+save_overwrite: true
+
+save_interval: 100
+save_interval_ephemeral: null
+save_num_checkpoints_to_keep: 3
+sharded_checkpointer: olmo_core
+
+save_interval_unsharded: 100
+save_num_unsharded_checkpoints_to_keep: 3
+
+# load_path: /home/mila/k/khandela/scratch/checkpoints/olmo-c/step30993
+load_path: /home/mila/k/khandela/scratch/ai2-llm/runs/retrain-dense-5lang/latest
+restore_dataloader: false
+eval_on_load: true
+# reset_optimizer_state: true
+
+
+max_duration: 5ep
+global_train_batch_size: 1024
+device_train_microbatch_size: 4
+
+precision: amp_bf16
+
+fsdp:
+  wrapping_strategy: by_block_and_size
+  precision: mixed
+
+max_grad_norm: 1.0
+max_grad_norm_ratio: null
+
+speed_monitor:
+  window_size: 1
+
+eval_interval: 1
+eval_subset_num_batches: -1
+device_eval_batch_size: ${device_train_microbatch_size}
+evaluators:
+  - label: validation-test
+    data:
+      num_workers: 0
+      drop_last: true
+      datasets:
+        english-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/en/part-0-00000.npy
+        nepali-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/ne/part-0-00000.npy
+        marathi-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/mr/part-0-00000.npy
+        bengali-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/bn/part-0-00000.npy
+        ukrainian-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/uk/part-0-00000.npy
+        farsi-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/fa/part-0-00000.npy
+        frisian-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/fy/part-0-00000.npy
+        arabic-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/ar/part-0-00000.npy
+        russian-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/ru/part-0-00000.npy
+        chinese-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/zh/part-0-00000.npy
+        hindi-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/hi/part-0-00000.npy
+        japanese-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/ja/part-0-00000.npy
+
+
+data:
+  pad_direction: right
+  num_workers: 32
+  drop_last: true
+  pin_memory: true
+  prefetch_factor: 8
+  persistent_workers: true
+  timeout: 0
+  instance_filter:
+      repetition_max_period: 13
+      repetition_min_period: 1
+      repetition_max_count: 32  
+  paths:
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-00-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-00-00001.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-01-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-02-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-02-00001.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-03-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-04-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-04-00001.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-05-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-06-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-06-00001.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-07-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-08-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/multilang/part-08-00001.npy
+
+
+
+
+
+
+
+
+

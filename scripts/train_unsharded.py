@@ -139,7 +139,9 @@ def main(cfg: TrainConfig) -> None:
 
     # olmo_model = OLMo(cfg.model)
     # olmo_model = OLMo.from_checkpoint("/home/mila/k/khandela/scratch/ai2-llm/checkpoints/OLMoE/base-0924")
-    olmo_model = OLMo.from_checkpoint("/home/mila/k/khandela/scratch/ai2-llm/runs/test-converted-ckpt/step1-unsharded")
+    olmo_model = OLMo.from_checkpoint("/home/mila/k/khandela/scratch/ai2-llm/checkpoints/OLMo-1B/base-test")
+    # olmo_model = OLMo.from_checkpoint("/home/mila/k/khandela/scratch/ai2-llm/runs/test-olmo/step1")
+    # olmo_model = OLMo.from_checkpoint("")
     # ipdb.set_trace()
     log.info(f"Total number of parameters: {olmo_model.num_params():,d}")
     log.info(f"Number of non-embedding parameters: {olmo_model.num_params(include_embedding=False):,d}")

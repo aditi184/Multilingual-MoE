@@ -1374,6 +1374,120 @@ class MMLU(ICLMultiChoiceTaskDataset):
         del doc
         return "Answer:"
 
+class GlobalMMLU(ICLMultiChoiceTaskDataset):
+    """Global MMLU dataset with multilingual multiple-choice QA"""
+
+    metric_type = "len_norm"  # Ideally pmi_dc
+
+
+    def __init__(
+        self,
+        tokenizer,
+        dataset_path="global_mmlu",
+        dataset_name=None,
+        split="dev",
+        prompt_variations=None,
+        mc_labels=False,
+        metric_type=None,
+    ):
+        dataset_names = []
+        dataset_names.append(dataset_name)
+        self.dev_set = {}
+        self.mc_labels = mc_labels
+        prompts: List[Union[None, str]] = [None]
+        if prompt_variations is not None:
+            if prompt_variations == 1:
+                prompts = [None, "inst", "inst+1", "inst+2", "inst+3", "inst+4", "inst+5"]
+            elif prompt_variations == 2:
+                prompts = ["inst+5"]
+            else:
+                raise ValueError(f"Unknown prompt variations: {prompt_variations}")
+            # Need to grab the dev set for the few-shot prompts
+            for name in dataset_names:
+                dev_set = load_hf_dataset(dataset_path, name, split)
+                self.dev_set[name] = dev_set
+                
+        super().__init__(
+            tokenizer=tokenizer,
+            dataset_path=dataset_path,
+            dataset_name=dataset_name,
+            split=split,
+            prompts=prompts,
+            metric_type=metric_type,
+        )
+    def doc_to_text(self, doc):
+        def format_example(doc, keys):
+            question_prefix = ""
+            if not self.mc_labels:
+                question_prefix = "Question: "
+            question = question_prefix + doc["question"].strip()
+
+            # Extract and format choices
+            if self.mc_labels:
+                option_map = {
+                    "A": doc["option_a"],
+                    "B": doc["option_b"],
+                    "C": doc["option_c"],
+                    "D": doc["option_d"],
+                }
+                choices = "".join([f"{k}. {v}\n" for k, v in option_map.items()])
+            else:
+                choices = ""
+
+            prompt = f"{question}\n{choices}Answer:"
+            return prompt
+        keys = ["A", "B", "C", "D"]
+        output_text = format_example(doc,keys)
+        if self.current_prompt is not None:
+            prefix = ""
+            if "inst" in self.current_prompt:
+                subject = doc.get("subject").replace("_", " ")
+                prefix = f"The following are multiple choice questions (with answers) about {subject}:\n\n"
+            num_shots = re.findall("\\+(\\d+)", self.current_prompt)
+            if num_shots:
+                dev_set = self.dev_set.get(doc.get("subject"), [])
+                num_shots_int = int(num_shots[0])
+                for idx, dev_doc in enumerate(dev_set):
+                    if idx >= num_shots_int:
+                        break
+                    if self.mc_labels:
+                        answer = keys[dev_doc["answer"]]
+                    else:
+                        answer = dev_doc["choices"][dev_doc["answer"]]
+                    prefix += format_example(dev_doc, keys) + " " + answer + "\n\n"
+            output_text = prefix + output_text
+        return output_text
+
+    def doc_to_continuations(self, doc):
+    # add spaces in front of continuation
+        if self.mc_labels:
+            choices = [" A", " B", " C", " D"]
+        else:
+            choices = [
+                " " + doc["option_a"],
+                " " + doc["option_b"],
+                " " + doc["option_c"],
+                " " + doc["option_d"],
+            ]
+        if self.metric_type in ["ce_loss", "bpb"]:
+            # Map "A" → 0, "B" → 1, etc.
+            answer_index = ord(doc["answer"]) - ord("A")
+            return [choices[answer_index]]
+        else:
+            return choices
+        
+    def doc_to_label(self, doc):
+        if self.metric_type in ["ce_loss", "bpb"]:
+            return 0
+        return ord(doc["answer"]) - ord("A")
+  # Still returns "A", "B", etc. — you can map later if needed
+
+    def doc_to_domain_conditional(self, doc):
+        del doc
+        return "Answer:"
+
+
+
 
 class TriviaQACELoss(ICLMultiChoiceTaskDataset):
     """Sample TriviaQA entity with some fields suppressed. For CE Loss we only consider the "value"
@@ -1621,6 +1735,22 @@ label_to_task_map = {
     "social_iqa": SocialIQa,
     "trivia_qa_wiki_ppl": TriviaQACELoss,
     "natural_qs_open_ppl": NaturalQuestionsCELoss,
+    "globalmmlu_english_test" : (GlobalMMLU, {"dataset_name": "en", "split": "test"}),
+    "globalmmlu_arabic_test" : (GlobalMMLU, {"dataset_name": "ar", "split": "test"}),
+    "globalmmlu_russian_test" : (GlobalMMLU, {"dataset_name": "ru", "split": "test"}),
+    "globalmmlu_hindi_test" : (GlobalMMLU, {"dataset_name": "hi", "split": "test"}),
+    "globalmmlu_chinese_test" : (GlobalMMLU, {"dataset_name": "zh", "split": "test"}),
+    "globalmmlu_korean_test" : (GlobalMMLU, {"dataset_name": "ko", "split": "test"}),
+    "globalmmlu_ukrainian_test" : (GlobalMMLU, {"dataset_name": "uk", "split": "test"}),
+    "globalmmlu_nepali_test" : (GlobalMMLU, {"dataset_name": "ne", "split": "test"}),
+    "globalmmlu_english_mc_5shot_test" : (GlobalMMLU, {"dataset_name": "en", "prompt_variations" : 2, "mc_labels": True, "split": "test"}),
+    "globalmmlu_arabic_mc_5shot_test" : (GlobalMMLU, {"dataset_name": "ar", "prompt_variations" : 2, "mc_labels": True, "split": "test"}),
+    "globalmmlu_russian_mc_5shot_test" : (GlobalMMLU, {"dataset_name": "ru", "prompt_variations" : 2, "mc_labels": True, "split": "test"}),
+    "globalmmlu_hindi_mc_5shot_test" : (GlobalMMLU, {"dataset_name": "hi", "prompt_variations" : 2, "mc_labels": True, "split": "test"}),
+    "globalmmlu_chinese_mc_5shot_test" : (GlobalMMLU, {"dataset_name": "zh", "prompt_variations" : 2, "mc_labels": True, "split": "test"}),   
+    "globalmmlu_korean_mc_5shot_test" : (GlobalMMLU, {"dataset_name": "ko", "prompt_variations" : 2, "mc_labels": True, "split": "test"}),
+    "globalmmlu_ukrainian_mc_5shot_test" : (GlobalMMLU, {"dataset_name": "uk", "prompt_variations" : 2, "mc_labels": True, "split": "test"}),
+    "globalmmlu_nepali_mc_5shot_test" : (GlobalMMLU, {"dataset_name": "ne", "prompt_variations" : 2, "mc_labels": True, "split": "test"}),  
     "mmlu_stem_test": (MMLU, {"dataset_name": "stem", "split": "test"}),
     "mmlu_humanities_test": (MMLU, {"dataset_name": "humanities", "split": "test"}),
     "mmlu_social_sciences_test": (MMLU, {"dataset_name": "social_sciences", "split": "test"}),

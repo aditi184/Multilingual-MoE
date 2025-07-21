@@ -1,4 +1,4 @@
-# Run script using python convert_hf_to_olmo.py --hf_model_path allenai/OLMoE-1B-7B-0924-Instruct --output_path /home/mila/k/khandela/scratch/ai2-llm/checkpoints/OLMoE/base --tokenizer_path allenai/OLMoE-1B-7B-0924
+# Run script using python convert_hf_to_olmo.py --hf_model_path allenai/OLMo-1B-hf --output_path /home/mila/k/khandela/scratch/ai2-llm/checkpoints/OLMo-1B/base --tokenizer_path allenai/OLMoE-1B-7B-0924
 
 import os
 import torch

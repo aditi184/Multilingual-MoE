@@ -34,10 +34,11 @@ from olmo.util import (
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP, ShardingStrategy
 
 # Load config
-cfg = TrainConfig.load("/home/mila/k/khandela/scratch/ai2-llm/checkpoints/OLMoE/base-0924/config.yaml")
+cfg = TrainConfig.load("/home/mila/k/khandela/scratch/ai2-llm/checkpoints/OLMo-1B/config.yaml")
 
 # Force CPU initialization for checkpoint loading
 cfg.model.init_device = "cpu"  # Critical fix
+# cfg.model.init_method = "cuda:0"  # Critical fix
 
 # Initialize components
 base_model = OLMo(cfg.model)
@@ -45,7 +46,7 @@ base_model = OLMo(cfg.model)
 # Load checkpoint
 full_checkpointer = FullCheckpointer(cfg)
 model_state, _ = full_checkpointer.load_checkpoint(
-    load_path="/home/mila/k/khandela/scratch/ai2-llm/checkpoints/OLMoE/base-0924/",
+    load_path="/home/mila/k/khandela/scratch/ai2-llm/checkpoints/OLMo-1B",
     load_optimizer_state=False
 )
 base_model.load_state_dict(model_state)
@@ -67,7 +68,7 @@ fsdp_model = FSDP(
 # Save sharded checkpoint
 sharded_checkpointer = build_sharded_checkpointer(cfg)
 sharded_checkpointer.save_checkpoint(
-    dir="/home/mila/k/khandela/scratch/ai2-llm/checkpoints/OLMoE/sharded-base-0924",
+    dir="/home/mila/k/khandela/scratch/ai2-llm/checkpoints/OLMo-1B-sharded",
     dist_model=fsdp_model,
     optim=torch.optim.AdamW(fsdp_model.parameters()),  # Dummy optimizer
     trainer_state={}

@@ -3,7 +3,7 @@ import os
 
 # List of language splits to download
 languages = [
-    'ar', 'en','hi', 'ru', 'zh'
+    "ne", "uk", "ko"
 ]
 
 # Base directory where individual language folders will be saved

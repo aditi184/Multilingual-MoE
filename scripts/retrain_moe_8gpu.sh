@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=pretrain-olmoe
-#SBATCH --gres=gpu:a100l:4
+#SBATCH --gres=gpu:a100l:8
 #SBATCH --cpus-per-task=64
 #SBATCH --mem=256GB
-#SBATCH --output=logs/pretrain_multilingual-29-04-2025.out
-#SBATCH --partition=short-unkillable
+#SBATCH --output=logs/pretrain_multilingual-26-05-2025.out
+#SBATCH --time=03:00:00
 
 echo Running on $(hostname)
 
@@ -20,4 +20,4 @@ conda activate OLMO
 
 
 # torchrun --nproc_per_node=4 train.py configs/config_multilingual.yml
-torchrun --nproc_per_node=4 train.py configs/config_lr_olmo.yml
+torchrun --nproc_per_node=8 train.py configs/olmoe_retrain.yml

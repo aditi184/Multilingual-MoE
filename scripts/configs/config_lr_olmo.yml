@@ -1,0 +1,180 @@
+run_name: olmo-multilang-low-resource
+seed: 6198
+dry_run: false
+no_pre_train_checkpoint: false
+
+wandb:
+  project: "OLMO-LR"   # Name of your W&B project
+  entity: "aditi-khandelwal-mcgill-university"  # W&B entity (usually your username or team name)
+  group: "aditi-khandelwal-mcgill-university"      # (Optional) Group name for multiple runs
+  name: "olmo-multilang-low-resource"               # (Optional) Custom name for this run
+  tags: ["experiment1"]  # (Optional) Tags for filtering runs
+  rank_zero_only: true 
+
+model:
+  d_model: 2048
+  n_heads: 16
+  n_kv_heads: null
+  clip_qkv: 8.0
+  n_layers: 16
+  mlp_ratio: 8
+  mlp_hidden_size: null
+  activation_type: swiglu
+  block_type: sequential
+  block_group_size: 1
+  alibi: false
+  alibi_bias_max: 8.0
+  rope: true
+  rope_full_precision: true
+  flash_attention: true
+  attention_dropout: 0.0
+  multi_query_attention: null
+  attention_layer_norm: false
+  residual_dropout: 0.0
+  embedding_dropout: 0.0
+  layer_norm_type: default
+  layer_norm_with_affine: false
+  attention_layer_norm_with_affine: false
+  max_sequence_length: 4096
+  include_bias: false
+  bias_for_layer_norm: false
+  scale_logits: false
+  vocab_size: 50280
+  embedding_size: 50304
+  weight_tying: false
+  eos_token_id: 0
+  pad_token_id: 1
+  init_device: meta
+  init_fn: mitchell
+  init_std: 0.02
+  init_cutoff_factor: null
+  precision: amp_bf16
+
+softmax_auxiliary_loss: true
+auxiliary_loss_multiplier: 1e-5
+fused_loss: null
+
+compile: null
+
+optimizer:
+  name: adamw
+  learning_rate: 3.0e-4
+  weight_decay: 0.1
+  eps: 1e-8
+  decay_norm_and_bias: true
+  decay_embeddings: false
+  betas:
+  - 0.9
+  - 0.95
+  metrics_log_interval: 1
+
+scheduler:
+  name: cosine_with_warmup
+  units: tokens
+  t_warmup: 8388608000
+  t_max: 5e12
+  alpha_f: 0.1
+  warmup_min_lr: 0.0
+
+tokenizer:
+  identifier: tokenizers/allenai_gpt-neox-olmo-dolma-v1_5.json
+  truncate_direction: right
+
+save_folder: /home/mila/k/khandela/scratch/ai2-llm/runs/${run_name}
+remote_save_folder: null
+save_overwrite: true
+
+save_interval: 100
+save_interval_ephemeral: null
+save_num_checkpoints_to_keep: 2
+sharded_checkpointer: olmo_core
+
+save_interval_unsharded: 100
+save_num_unsharded_checkpoints_to_keep: 2
+
+load_path: /home/mila/k/khandela/scratch/ai2-llm/runs/olmo-multilang-low-resource/latest
+try_load_latest_save: true
+eval_on_load: true
+
+
+max_duration: 2ep
+global_train_batch_size: 1024
+device_train_microbatch_size: 4
+
+precision: amp_bf16
+
+fsdp:
+  wrapping_strategy: by_block_and_size
+  precision: mixed
+
+max_grad_norm: 1.0
+max_grad_norm_ratio: null
+
+speed_monitor:
+  window_size: 1
+
+eval_interval: 100
+eval_subset_num_batches: -1
+device_eval_batch_size: ${device_train_microbatch_size}
+evaluators:
+  - label: validation-test
+    data:
+      num_workers: 0
+      drop_last: true
+      datasets:
+        arabic-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/ar/part-0-00000.npy
+        russian-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/ru/part-0-00000.npy
+        chinese-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/zh/part-0-00000.npy
+        hindi-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/hi/part-0-00000.npy
+        english-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/en/part-0-00000.npy
+        nepali-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/ne/part-0-00000.npy
+        ukrainian-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/uk/part-0-00000.npy
+        korean-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/ko/part-0-00000.npy
+        frisian-validation:
+          - /home/mila/k/khandela/scratch/olmoe-data/test/fy/part-0-00000.npy
+
+  ##########################
+  # Downstream evaluations #
+  ##########################
+  - label: piqa
+    type: downstream
+
+  - label: mmlu_social_sciences_mc_5shot
+    type: downstream
+
+data:
+  pad_direction: right
+  num_workers: 32
+  drop_last: true
+  pin_memory: true
+  prefetch_factor: 8
+  persistent_workers: true
+  timeout: 0
+  instance_filter:
+      repetition_max_period: 13
+      repetition_min_period: 1
+      repetition_max_count: 32  
+  paths:
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-0-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-1-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-3-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-4-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-5-00001.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-6-00001.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-7-00001.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-8-00001.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-0-00001.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-2-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-3-00001.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-5-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-6-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-7-00000.npy
+    - /home/mila/k/khandela/scratch/olmoe-data/low-resource-train/part-8-00000.npy
