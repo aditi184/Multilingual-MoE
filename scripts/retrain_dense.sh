@@ -15,7 +15,7 @@ export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
 source ~/.bashrc 
 conda activate OLMO
 
-# wandb login 37116fe56d7716a68ca696610da1b9da40f4690e
+# wandb login  # authenticate via the WANDB_API_KEY environment variable; never commit keys
 
 
 
